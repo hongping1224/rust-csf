@@ -1,4 +1,3 @@
-use std::time::Instant;
 use whitebox_lidar::LasFile;
 extern crate nalgebra as na;
 use na::Matrix3x1;

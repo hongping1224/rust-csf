@@ -46,8 +46,9 @@ impl Cloth {
         rigidness: i32,
         _time_step: f64,
     ) -> Cloth {
-        let p = &mut Vec::with_capacity((_num_particles_width * _num_particles_height) as usize);
         let time_step2 = _time_step * _time_step;
+        let mut p = Vec::with_capacity((_num_particles_width * _num_particles_height) as usize);
+
         for j in 0.._num_particles_height {
             for i in 0.._num_particles_width {
                 let pos = Matrix3x1::new(
@@ -60,11 +61,10 @@ impl Cloth {
                 p.push(Particle::new(pos, time_step2, i, j));
             }
         }
-        let neighbors =
-            &mut Vec::with_capacity((_num_particles_width * _num_particles_height) as usize);
-        for _ in 0..(_num_particles_width * _num_particles_height) {
-            neighbors.push(Vec::<usize>::new());
-        }
+        let neighbors = &mut vec![
+            Vec::<usize>::with_capacity(16);
+            (_num_particles_height * _num_particles_width) as usize
+        ];
         for x in 0.._num_particles_width {
             for y in 0.._num_particles_height {
                 if x < (_num_particles_width - 1) {
@@ -135,9 +135,9 @@ impl Cloth {
             step_y: _step_y,
             num_particles_width: _num_particles_width,
             num_particles_height: _num_particles_height,
-            particles: p.to_vec(),
+            particles: p,
             height_vals: Vec::new(),
-            neighbors: neighbors.to_vec(),
+            neighbors: neighbors.to_owned(),
         }
     }
 

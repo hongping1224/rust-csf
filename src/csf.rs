@@ -16,7 +16,7 @@ pub struct Csf {
     pub cloth_resolution: f64,
     pub rigidness: i32,
     pub iterations: i32,
-    points: Vec<Matrix3x1<f64>>,
+    pub points: Vec<Matrix3x1<f64>>,
     bb_max: Matrix3x1<f64>,
     bb_min: Matrix3x1<f64>,
 }
@@ -42,8 +42,7 @@ impl Csf {
         }
     }
 
-    pub fn set_point_cloud(mut self, reader: LasFile) -> Self {
-        let start = Instant::now();
+    pub fn set_point_cloud(mut self, reader: &LasFile) -> Self {
         let n_points = reader.header.number_of_points as usize;
         // self.points = Vec::with_capacity(n_points);
         // for i in 0..n_points {
@@ -56,10 +55,6 @@ impl Csf {
             let xyz = reader.get_transformed_coords(i);
             *p = Matrix3x1::new(xyz.x, -xyz.z, xyz.y);
         });
-        // self.points.par_iter_mut().with_max_len((n_points/num_cpus::get())+1).enumerate().for_each(|(i,p)| {
-        //     let xyz = reader.get_transformed_coords(i);
-        //     *p = Point3D::new(xyz.x, -xyz.z, xyz.y);
-        // });
 
         self.bb_max = Matrix3x1::new(
             reader.header.max_x,
@@ -71,12 +66,10 @@ impl Csf {
             -reader.header.max_z,
             reader.header.min_y,
         );
-        let dur = get_formatted_elapsed_time(start);
-        println!("set point_cloud :{}", dur);
         self
     }
 
-    pub fn filter(&mut self) -> (Vec<usize>, Vec<usize>) {
+    pub fn generate_cloth(&self) -> Cloth {
         let cloth_y_height = 0.05;
         let clothbuffer_d: f64 = 2.0;
         let origin_pos = Matrix3x1::new(
@@ -92,8 +85,7 @@ impl Csf {
         let height_num: i32 =
             ((self.bb_max.z - self.bb_min.z) / self.cloth_resolution).floor() as i32;
         let height_num: i32 = height_num + 2 * (clothbuffer_d as i32);
-        let start = Instant::now();
-        let cloth = &mut Cloth::new(
+        let cloth = Cloth::new(
             origin_pos,
             width_num,
             height_num,
@@ -104,20 +96,19 @@ impl Csf {
             self.rigidness,
             self.time_step,
         );
-        let dur = get_formatted_elapsed_time(start);
-        println!("generate cloth :{}", dur);
+        cloth
+    }
 
-        let start = Instant::now();
+    pub fn filter(&mut self) -> (Vec<usize>, Vec<usize>) {
+        let cloth = &mut self.generate_cloth();
+
         rasterization::Rasterization::raster_terrain(cloth, &self.points);
-        let dur = get_formatted_elapsed_time(start);
-        println!("rasterize :{}", dur);
 
         let time_step2 = self.time_step * self.time_step;
         let gravity = 0.2;
 
         cloth.add_force(Matrix3x1::new(0.0, -gravity, 0.0) * time_step2);
 
-        let start = Instant::now();
         for _ in 0..self.iterations {
             let max_diff = cloth.time_step();
             cloth.terr_collision();
@@ -126,31 +117,29 @@ impl Csf {
                 break;
             }
         }
-        let dur = get_formatted_elapsed_time(start);
-        println!("terr_collision :{}", dur);
 
-        let start = Instant::now();
         if self.b_sloop_smooth {
             cloth.movable_filter();
         }
-        let dur = get_formatted_elapsed_time(start);
-        println!("movable_filter :{}", dur);
-        let start = Instant::now();
+
         let (ground_index, non_ground_index) =
             c2cdist::cal_cloud_to_cloud_dist(cloth, &self.points, self.class_threshold);
-        let dur = get_formatted_elapsed_time(start);
-        println!("cal_cloud_to_cloud_dist :{}", dur);
+
         (ground_index, non_ground_index)
     }
 }
 
-pub fn get_formatted_elapsed_time(instant: Instant) -> String {
-    let dur = instant.elapsed();
-    let minutes = dur.as_secs() / 60;
-    let sub_sec = dur.as_secs() % 60;
-    let sub_milli = dur.subsec_nanos();
-    if minutes > 0 {
-        return format!("{}min {}.{:09}s", minutes, sub_sec, sub_milli);
-    }
-    format!("{}.{}s", sub_sec, sub_milli)
-}
+// pub fn get_formatted_elapsed_time(instant: Instant) -> String {
+//     let dur = instant.elapsed();
+//     let minutes = dur.as_secs() / 60;
+//     let sub_sec = dur.as_secs() % 60;
+//     let sub_milli = dur.subsec_nanos();
+//     if minutes > 0 {
+//         return format!(
+//             "{}min {}s",
+//             minutes,
+//             sub_sec as f64 + (sub_milli) as f64 / 1_000_000_000.0
+//         );
+//     }
+//     format!("{}s", sub_sec as f64 + (sub_milli) as f64 / 1_000_000_000.0)
+// }

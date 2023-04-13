@@ -5,7 +5,7 @@ pub struct Particle {
     movable: bool,
     mass: f64,
     acceleration: Matrix3x1<f64>,
-    time_step: f64,
+    pub time_step: f64,
     pub pos: Matrix3x1<f64>,
     pub old_pos: Matrix3x1<f64>,
     pub is_visited: bool,
@@ -26,6 +26,7 @@ const DOUBLE_MOVE1: [f64; 15] = [
     0.5,
 ];
 const DAMPING: f64 = 0.01;
+
 impl Particle {
     pub fn new(pos: Matrix3x1<f64>, time_step: f64, x: i32, y: i32) -> Particle {
         Particle {
@@ -86,7 +87,7 @@ impl Particle {
     }
     pub fn time_step(&mut self) {
         if self.is_movable() {
-            let tmp = self.pos.clone();
+            let tmp = self.pos;
             self.pos = self.pos
                 + (self.pos - self.old_pos) * (1.0 - DAMPING)
                 + self.acceleration * self.time_step;

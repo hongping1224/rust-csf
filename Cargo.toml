@@ -13,3 +13,10 @@ nalgebra = "*"
 rayon ="*"
 libm ="*"
 glob ="0.3.1"
+
+[dev-dependencies]
+criterion = "0.4.0"
+
+[[bench]]
+name = "csf_bench"
+harness = false

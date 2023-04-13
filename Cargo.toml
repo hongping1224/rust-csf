@@ -8,7 +8,6 @@ authors = ["Hongping <hongping1224@gmail.com>"]
 
 [dependencies]
 whitebox_lidar = {git = "https://github.com/jblindsay/whitebox-tools.git", package = "whitebox_lidar"}
-whitebox_common = {git = "https://github.com/jblindsay/whitebox-tools.git", package = "whitebox_common"}
 queues = "1.0.2"
 nalgebra = "*"
 rayon ="*"

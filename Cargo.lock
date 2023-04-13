@@ -246,7 +246,6 @@ dependencies = [
  "nalgebra",
  "queues",
  "rayon",
- "whitebox_common",
  "whitebox_lidar",
 ]
 

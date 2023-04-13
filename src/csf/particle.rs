@@ -1,4 +1,4 @@
-use super::na::Matrix3x1;
+use nalgebra::Matrix3x1;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Particle {

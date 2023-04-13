@@ -1,5 +1,5 @@
-use super::na::Matrix3x1;
 use crate::csf::particle::Particle;
+use nalgebra::Matrix3x1;
 extern crate queues;
 use libm::fabs;
 use queues::*;

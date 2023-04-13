@@ -1,5 +1,4 @@
 use std::time::Instant;
-use whitebox_common::structures::Point3D;
 use whitebox_lidar::LasFile;
 extern crate nalgebra as na;
 use na::Matrix3x1;
@@ -7,7 +6,6 @@ mod c2cdist;
 mod cloth;
 mod particle;
 mod rasterization;
-mod vec3;
 use crate::csf::cloth::Cloth;
 use rayon::prelude::*;
 
@@ -18,9 +16,9 @@ pub struct Csf {
     pub cloth_resolution: f64,
     pub rigidness: i32,
     pub iterations: i32,
-    points: Vec<Point3D>,
-    bb_max: Point3D,
-    bb_min: Point3D,
+    points: Vec<Matrix3x1<f64>>,
+    bb_max: Matrix3x1<f64>,
+    bb_min: Matrix3x1<f64>,
 }
 
 impl Default for Csf {
@@ -39,8 +37,8 @@ impl Csf {
             rigidness: 3,
             iterations: 500,
             points: Vec::new(),
-            bb_max: Point3D::new(0.0, 0.0, 0.0),
-            bb_min: Point3D::new(0.0, 0.0, 0.0),
+            bb_max: Matrix3x1::new(0.0, 0.0, 0.0),
+            bb_min: Matrix3x1::new(0.0, 0.0, 0.0),
         }
     }
 
@@ -53,22 +51,22 @@ impl Csf {
         //     self.points.push(Point3D::new(xyz.x, -xyz.z, xyz.y));
         // }
 
-        self.points = vec![Point3D::new(0.0, 0.0, 0.0); n_points];
+        self.points = vec![Matrix3x1::new(0.0, 0.0, 0.0); n_points];
         self.points.par_iter_mut().enumerate().for_each(|(i, p)| {
             let xyz = reader.get_transformed_coords(i);
-            *p = Point3D::new(xyz.x, -xyz.z, xyz.y);
+            *p = Matrix3x1::new(xyz.x, -xyz.z, xyz.y);
         });
         // self.points.par_iter_mut().with_max_len((n_points/num_cpus::get())+1).enumerate().for_each(|(i,p)| {
         //     let xyz = reader.get_transformed_coords(i);
         //     *p = Point3D::new(xyz.x, -xyz.z, xyz.y);
         // });
 
-        self.bb_max = Point3D::new(
+        self.bb_max = Matrix3x1::new(
             reader.header.max_x,
             -reader.header.min_z,
             reader.header.max_y,
         );
-        self.bb_min = Point3D::new(
+        self.bb_min = Matrix3x1::new(
             reader.header.min_x,
             -reader.header.max_z,
             reader.header.min_y,

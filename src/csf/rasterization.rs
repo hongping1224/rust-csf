@@ -1,6 +1,6 @@
 use crate::csf::cloth::Cloth;
+use nalgebra::Matrix3x1;
 use std::ops::{Add, Mul, Sub};
-use whitebox_common::structures::Point3D;
 extern crate queues;
 
 use queues::*;
@@ -94,7 +94,7 @@ impl Rasterization {
         Self::find_height_by_neighbor(index, cloth)
     }
 
-    pub fn raster_terrain(cloth: &mut Cloth, pc: &[Point3D]) {
+    pub fn raster_terrain(cloth: &mut Cloth, pc: &[Matrix3x1<f64>]) {
         for (i, point) in pc.iter().enumerate() {
             let pc_x = point.x;
             let pc_z = point.z;

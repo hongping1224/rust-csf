@@ -1,0 +1,16 @@
+[package]
+name = "csf"
+version = "0.1.0"
+edition = "2021"
+authors = ["Hongping <hongping1224@gmail.com>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+whitebox_lidar = {git = "https://github.com/jblindsay/whitebox-tools.git", package = "whitebox_lidar"}
+whitebox_common = {git = "https://github.com/jblindsay/whitebox-tools.git", package = "whitebox_common"}
+queues = "1.0.2"
+nalgebra = "*"
+rayon ="*"
+libm ="*"
+glob ="0.3.1"

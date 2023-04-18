@@ -18,7 +18,7 @@ mod tests {
             Err(err) => panic!("Error reading file {}: {}", input_file, err),
         };
         let (gorund_index, _) = csf.set_point_cloud(&lasfile).filter();
-        assert!(282177 == gorund_index.len())
+        assert_eq!(282177, gorund_index.len())
     }
 
     #[test]
@@ -35,6 +35,6 @@ mod tests {
             Err(err) => panic!("Error reading file {}: {}", input_file, err),
         };
         let (gorund_index, _) = csf.set_point_cloud(&lasfile).filter();
-        assert!(31956167 == gorund_index.len())
+        assert_eq!(31956167, gorund_index.len())
     }
 }

@@ -41,6 +41,26 @@ impl Csf {
         }
     }
 
+    pub fn set_point_cloud_with_index(mut self, reader: &LasFile, index: &Vec<usize>) -> Self {
+        let n_points: usize = index.len();
+        self.points = vec![Matrix3x1::new(0.0, 0.0, 0.0); n_points];
+        self.points.par_iter_mut().enumerate().for_each(|(i, p)| {
+            let xyz = reader.get_transformed_coords(index[i]);
+            *p = Matrix3x1::new(xyz.x, -xyz.z, xyz.y);
+        });
+
+        self.bb_max = Matrix3x1::new(
+            reader.header.max_x,
+            -reader.header.min_z,
+            reader.header.max_y,
+        );
+        self.bb_min = Matrix3x1::new(
+            reader.header.min_x,
+            -reader.header.max_z,
+            reader.header.min_y,
+        );
+        self
+    }
     pub fn set_point_cloud(mut self, reader: &LasFile) -> Self {
         let n_points = reader.header.number_of_points as usize;
         // self.points = Vec::with_capacity(n_points);

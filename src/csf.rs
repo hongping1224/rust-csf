@@ -49,16 +49,22 @@ impl Csf {
             *p = Matrix3x1::new(xyz.x, -xyz.z, xyz.y);
         });
 
-        self.bb_max = Matrix3x1::new(
-            reader.header.max_x,
-            -reader.header.min_z,
-            reader.header.max_y,
-        );
-        self.bb_min = Matrix3x1::new(
-            reader.header.min_x,
-            -reader.header.max_z,
-            reader.header.min_y,
-        );
+        let mut max_x = f64::MIN;
+        let mut max_y = f64::MIN;
+        let mut max_z = f64::MIN;
+        let mut min_x = f64::MAX;
+        let mut min_y = f64::MAX;
+        let mut min_z = f64::MAX;
+        self.points.iter().for_each(|&p| {
+            max_x = max_x.max(p.x);
+            max_y = max_y.max(p.y);
+            max_z = max_z.max(p.z);
+            min_x = min_x.min(p.x);
+            min_y = min_y.min(p.y);
+            min_z = min_z.min(p.z);
+        });
+        self.bb_max = Matrix3x1::new(max_x, max_y, max_z);
+        self.bb_min = Matrix3x1::new(min_x, min_y, min_z);
         self
     }
     pub fn set_point_cloud(mut self, reader: &LasFile) -> Self {

@@ -1,6 +1,6 @@
 use whitebox_lidar::LasFile;
 extern crate nalgebra as na;
-use na::Matrix3x1;
+use na::Vector3;
 mod c2cdist;
 mod cloth;
 mod particle;
@@ -15,9 +15,9 @@ pub struct Csf {
     pub cloth_resolution: f64,
     pub rigidness: i32,
     pub iterations: i32,
-    pub points: Vec<Matrix3x1<f64>>,
-    bb_max: Matrix3x1<f64>,
-    bb_min: Matrix3x1<f64>,
+    pub points: Vec<Vector3<f64>>,
+    bb_max: Vector3<f64>,
+    bb_min: Vector3<f64>,
 }
 
 impl Default for Csf {
@@ -36,17 +36,17 @@ impl Csf {
             rigidness: 3,
             iterations: 500,
             points: Vec::new(),
-            bb_max: Matrix3x1::new(0.0, 0.0, 0.0),
-            bb_min: Matrix3x1::new(0.0, 0.0, 0.0),
+            bb_max: Vector3::new(0.0, 0.0, 0.0),
+            bb_min: Vector3::new(0.0, 0.0, 0.0),
         }
     }
 
     pub fn set_point_cloud_with_index(mut self, reader: &LasFile, index: &Vec<usize>) -> Self {
         let n_points: usize = index.len();
-        self.points = vec![Matrix3x1::new(0.0, 0.0, 0.0); n_points];
+        self.points = vec![Vector3::new(0.0, 0.0, 0.0); n_points];
         self.points.par_iter_mut().enumerate().for_each(|(i, p)| {
             let xyz = reader.get_transformed_coords(index[i]);
-            *p = Matrix3x1::new(xyz.x, -xyz.z, xyz.y);
+            *p = Vector3::new(xyz.x, -xyz.z, xyz.y);
         });
 
         let mut max_x = f64::MIN;
@@ -63,8 +63,8 @@ impl Csf {
             min_y = min_y.min(p.y);
             min_z = min_z.min(p.z);
         });
-        self.bb_max = Matrix3x1::new(max_x, max_y, max_z);
-        self.bb_min = Matrix3x1::new(min_x, min_y, min_z);
+        self.bb_max = Vector3::new(max_x, max_y, max_z);
+        self.bb_min = Vector3::new(min_x, min_y, min_z);
         self
     }
     pub fn set_point_cloud(mut self, reader: &LasFile) -> Self {
@@ -75,18 +75,18 @@ impl Csf {
         //     self.points.push(Point3D::new(xyz.x, -xyz.z, xyz.y));
         // }
 
-        self.points = vec![Matrix3x1::new(0.0, 0.0, 0.0); n_points];
+        self.points = vec![Vector3::new(0.0, 0.0, 0.0); n_points];
         self.points.par_iter_mut().enumerate().for_each(|(i, p)| {
             let xyz = reader.get_transformed_coords(i);
-            *p = Matrix3x1::new(xyz.x, -xyz.z, xyz.y);
+            *p = Vector3::new(xyz.x, -xyz.z, xyz.y);
         });
 
-        self.bb_max = Matrix3x1::new(
+        self.bb_max = Vector3::new(
             reader.header.max_x,
             -reader.header.min_z,
             reader.header.max_y,
         );
-        self.bb_min = Matrix3x1::new(
+        self.bb_min = Vector3::new(
             reader.header.min_x,
             -reader.header.max_z,
             reader.header.min_y,
@@ -97,7 +97,7 @@ impl Csf {
     pub fn generate_cloth(&self) -> Cloth {
         let cloth_y_height = 0.05;
         let clothbuffer_d: f64 = 2.0;
-        let origin_pos = Matrix3x1::new(
+        let origin_pos = Vector3::new(
             self.bb_min.x - (clothbuffer_d * self.cloth_resolution),
             self.bb_max.y + cloth_y_height,
             self.bb_min.z - (clothbuffer_d * self.cloth_resolution),
@@ -132,7 +132,7 @@ impl Csf {
         let time_step2 = self.time_step * self.time_step;
         let gravity = 0.2;
 
-        cloth.add_force(Matrix3x1::new(0.0, -gravity, 0.0) * time_step2);
+        cloth.add_force(Vector3::new(0.0, -gravity, 0.0) * time_step2);
 
         for _ in 0..self.iterations {
             let max_diff = cloth.time_step();

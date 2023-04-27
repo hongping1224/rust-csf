@@ -1,5 +1,5 @@
 use crate::csf::particle::Particle;
-use nalgebra::Matrix3x1;
+use nalgebra::Vector3;
 extern crate queues;
 use libm::fabs;
 use queues::*;
@@ -25,7 +25,7 @@ pub struct Cloth {
     pub particles: Vec<Particle>,
     smooth_threshold: f64,
     height_threshold: f64,
-    pub origin_pos: Matrix3x1<f64>,
+    pub origin_pos: Vector3<f64>,
     pub step_x: f64,
     pub step_y: f64,
     pub height_vals: Vec<f64>,
@@ -36,7 +36,7 @@ pub struct Cloth {
 
 impl Cloth {
     pub fn new(
-        _origin_pos: Matrix3x1<f64>,
+        _origin_pos: Vector3<f64>,
         _num_particles_width: i32,
         _num_particles_height: i32,
         _step_x: f64,
@@ -51,7 +51,7 @@ impl Cloth {
 
         for j in 0.._num_particles_height {
             for i in 0.._num_particles_width {
-                let pos = Matrix3x1::new(
+                let pos = Vector3::new(
                     _origin_pos.x + (i as f64) * _step_x,
                     _origin_pos.y,
                     _origin_pos.z + (j as f64) * _step_y,
@@ -215,7 +215,7 @@ impl Cloth {
     //     return self.particles[index];
     // }
 
-    pub fn add_force(&mut self, direction: Matrix3x1<f64>) {
+    pub fn add_force(&mut self, direction: Vector3<f64>) {
         for i in 0..self.particles.len() {
             self.particles[i].add_force(direction);
         }
@@ -235,7 +235,7 @@ impl Cloth {
             .for_each(|(i, p)| {
                 let v = p.pos;
                 if v.y < self.height_vals[i] {
-                    p.offset_pos(Matrix3x1::new(0.0, self.height_vals[i] - v.y, 0.0));
+                    p.offset_pos(Vector3::new(0.0, self.height_vals[i] - v.y, 0.0));
                     p.make_unmovable();
                 }
             })
@@ -375,7 +375,7 @@ impl Cloth {
                         < self.smooth_threshold)
                     && (ptc.pos.y - self.height_vals[index] < self.height_threshold)
                 {
-                    let offset_vec = Matrix3x1::new(0.0, self.height_vals[index] - ptc.pos.y, 0.0);
+                    let offset_vec = Vector3::new(0.0, self.height_vals[index] - ptc.pos.y, 0.0);
                     self.particles[index].offset_pos(offset_vec);
                     self.particles[index].make_unmovable();
                     edge_points.push(i);
@@ -391,7 +391,7 @@ impl Cloth {
                         < self.smooth_threshold)
                     && (ptc.pos.y - self.height_vals[index] < self.height_threshold)
                 {
-                    let offset_vec = Matrix3x1::new(0.0, self.height_vals[index] - ptc.pos.y, 0.0);
+                    let offset_vec = Vector3::new(0.0, self.height_vals[index] - ptc.pos.y, 0.0);
                     self.particles[index].offset_pos(offset_vec);
                     self.particles[index].make_unmovable();
                     edge_points.push(i);
@@ -407,7 +407,7 @@ impl Cloth {
                         < self.smooth_threshold)
                     && (ptc.pos.y - self.height_vals[index] < self.height_threshold)
                 {
-                    let offset_vec = Matrix3x1::new(0.0, self.height_vals[index] - ptc.pos.y, 0.0);
+                    let offset_vec = Vector3::new(0.0, self.height_vals[index] - ptc.pos.y, 0.0);
                     self.particles[index].offset_pos(offset_vec);
                     self.particles[index].make_unmovable();
                     edge_points.push(i);
@@ -423,7 +423,7 @@ impl Cloth {
                         < self.smooth_threshold)
                     && (ptc.pos.y - self.height_vals[index] < self.height_threshold)
                 {
-                    let offset_vec = Matrix3x1::new(0.0, self.height_vals[index] - ptc.pos.y, 0.0);
+                    let offset_vec = Vector3::new(0.0, self.height_vals[index] - ptc.pos.y, 0.0);
                     self.particles[index].offset_pos(offset_vec);
                     self.particles[index].make_unmovable();
                     edge_points.push(i);
@@ -466,7 +466,7 @@ impl Cloth {
                     && (fabs(self.particles[index_neibor].pos.y - self.height_vals[index_neibor])
                         < self.height_threshold)
                 {
-                    let offset_vec = Matrix3x1::new(
+                    let offset_vec = Vector3::new(
                         0.0,
                         self.height_vals[index_neibor] - self.particles[index_neibor].pos.y,
                         0.0,

@@ -1,10 +1,10 @@
 use crate::csf::cloth::Cloth;
 use libm::fabs;
-use nalgebra::Matrix3x1;
+use nalgebra::Vector3;
 
 pub fn cal_cloud_to_cloud_dist(
     cloth: &Cloth,
-    points: &[Matrix3x1<f64>],
+    points: &[Vector3<f64>],
     threshold: f64,
 ) -> (Vec<usize>, Vec<usize>) {
     let mut ground_index = vec![];

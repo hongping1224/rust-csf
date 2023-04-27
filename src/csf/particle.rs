@@ -1,13 +1,13 @@
-use nalgebra::Matrix3x1;
+use nalgebra::Vector3;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Particle {
     movable: bool,
     mass: f64,
-    acceleration: Matrix3x1<f64>,
+    acceleration: Vector3<f64>,
     pub time_step: f64,
-    pub pos: Matrix3x1<f64>,
-    pub old_pos: Matrix3x1<f64>,
+    pub pos: Vector3<f64>,
+    pub old_pos: Vector3<f64>,
     pub is_visited: bool,
     pub pos_x: i32,
     pub pos_y: i32,
@@ -28,11 +28,11 @@ const DOUBLE_MOVE1: [f64; 15] = [
 const DAMPING: f64 = 0.01;
 
 impl Particle {
-    pub fn new(pos: Matrix3x1<f64>, time_step: f64, x: i32, y: i32) -> Particle {
+    pub fn new(pos: Vector3<f64>, time_step: f64, x: i32, y: i32) -> Particle {
         Particle {
             movable: true,
             mass: 1.0,
-            acceleration: Matrix3x1::new(0.0, 0.0, 0.0),
+            acceleration: Vector3::new(0.0, 0.0, 0.0),
             time_step,
             pos,
             old_pos: pos,
@@ -50,10 +50,10 @@ impl Particle {
         constraint_times: usize,
         p1: &Particle,
         p2: &Particle,
-    ) -> (Matrix3x1<f64>, Matrix3x1<f64>) {
-        let correction_vector = Matrix3x1::new(0.0, p2.pos.y - p1.pos.y, 0.0);
+    ) -> (Vector3<f64>, Vector3<f64>) {
+        let correction_vector = Vector3::new(0.0, p2.pos.y - p1.pos.y, 0.0);
         if p1.is_movable() && p2.is_movable() {
-            let correction_vector_half: Matrix3x1<f64> = correction_vector
+            let correction_vector_half: Vector3<f64> = correction_vector
                 * (if constraint_times > 14 {
                     0.5
                 } else {
@@ -61,28 +61,28 @@ impl Particle {
                 });
             return (correction_vector_half, -correction_vector_half);
         } else if p1.is_movable() && !p2.is_movable() {
-            let correction_vector_half: Matrix3x1<f64> = correction_vector
+            let correction_vector_half: Vector3<f64> = correction_vector
                 * (if constraint_times > 14 {
                     1.0
                 } else {
                     SINGLE_MOVE1[constraint_times]
                 });
-            return (correction_vector_half, Matrix3x1::new(0.0, 0.0, 0.0));
+            return (correction_vector_half, Vector3::new(0.0, 0.0, 0.0));
         } else if !p1.is_movable() && p2.is_movable() {
-            let correction_vector_half: Matrix3x1<f64> = correction_vector
+            let correction_vector_half: Vector3<f64> = correction_vector
                 * (if constraint_times > 14 {
                     1.0
                 } else {
                     SINGLE_MOVE1[constraint_times]
                 });
-            return (Matrix3x1::new(0.0, 0.0, 0.0), -correction_vector_half);
+            return (Vector3::new(0.0, 0.0, 0.0), -correction_vector_half);
         }
-        (Matrix3x1::new(0.0, 0.0, 0.0), Matrix3x1::new(0.0, 0.0, 0.0))
+        (Vector3::new(0.0, 0.0, 0.0), Vector3::new(0.0, 0.0, 0.0))
     }
     pub fn is_movable(&self) -> bool {
         self.movable
     }
-    pub fn add_force(&mut self, f: Matrix3x1<f64>) {
+    pub fn add_force(&mut self, f: Vector3<f64>) {
         self.acceleration += f / self.mass;
     }
     pub fn time_step(&mut self) {
@@ -95,7 +95,7 @@ impl Particle {
         }
     }
 
-    pub fn offset_pos(&mut self, v: Matrix3x1<f64>) {
+    pub fn offset_pos(&mut self, v: Vector3<f64>) {
         if self.movable {
             self.pos += v;
         }
